@@ -1,14 +1,28 @@
 <template>
   <div class="app-manage-search">
-    <tiny-search v-model="state.templateSearchValue" clearable placeholder="搜索模板"
-      @update:modelValue="searchTemplateData"></tiny-search>
+    <tiny-search
+      v-model="state.templateSearchValue"
+      clearable
+      placeholder="搜索模板"
+      @update:modelValue="searchTemplateData"
+    ></tiny-search>
   </div>
 
   <div class="tree-container app-manage-tree">
-    <tiny-tree ref="templateTreeRefs" :data="templateSettingState.templates" node-key="id" highlight-current
-      current-node-key="1-1" :props="{ children: 'children', label: 'name' }"
-      :filter-node-method="filterTemplateTreeData" :expand-on-click-node="false" :shrink-icon="shrinkIcon"
-      :expand-icon="expandIcon" @current-change="handleCurrentChange" default-expand-all>
+    <tiny-tree
+      ref="templateTreeRefs"
+      :data="templateSettingState.templates"
+      node-key="id"
+      highlight-current
+      current-node-key="1-1"
+      :props="{ children: 'children', label: 'name' }"
+      :filter-node-method="filterTemplateTreeData"
+      :expand-on-click-node="false"
+      :shrink-icon="shrinkIcon"
+      :expand-icon="expandIcon"
+      @current-change="handleCurrentChange"
+      default-expand-all
+    >
       <template #operation="{ node }">
         <div style="width: 80px; text-align: right" @click.stop>
           <tiny-dropdown size="mini" trigger="click" :show-icon="false" :visible-arrow="true">
@@ -17,8 +31,9 @@
               <tiny-dropdown-menu popper-class="my-class">
                 <tiny-dropdown-item v-if="!node.data.isTemplate" @click="addTemplate(node)">新增</tiny-dropdown-item>
                 <tiny-dropdown-item @click="editTemplate(node)">编辑</tiny-dropdown-item>
-                <tiny-dropdown-item v-if="node.data.id !== '0000000000000000'"
-                  @click="deleteTemplate(node)">删除</tiny-dropdown-item>
+                <tiny-dropdown-item v-if="node.data.id !== '0000000000000000'" @click="deleteTemplate(node)"
+                  >删除</tiny-dropdown-item
+                >
                 <tiny-dropdown-item @click="generatePageFromTemplate(node)">生成页面</tiny-dropdown-item>
               </tiny-dropdown-menu>
             </template>
@@ -43,7 +58,16 @@ import {
   DropdownItem as TinyDropdownItem
 } from '@opentiny/vue'
 import { IconFolderOpened, IconFolderClosed } from '@opentiny/vue-icon'
-import { useCanvas, useApp, useModal, useTemplate, useBreadcrumb, useLayout, useNotify, usePage } from '@opentiny/tiny-engine-controller'
+import {
+  useCanvas,
+  useApp,
+  useModal,
+  useTemplate,
+  useBreadcrumb,
+  useLayout,
+  useNotify,
+  usePage
+} from '@opentiny/tiny-engine-controller'
 import { getCanvasStatus } from '@opentiny/tiny-engine-controller/js/canvas'
 import { constants } from '@opentiny/tiny-engine-utils'
 import { closeTemplateSettingPanel } from './TemplateSetting.vue'
@@ -68,8 +92,8 @@ export default {
     const { appInfoState } = useApp()
     const { confirm } = useModal()
     const { initData, templateState, isBlock, isTemplateSaved, isSaved, setSaved } = useCanvas()
-    const { templateSettingState, isCurrentDataSame, changeTreeData } = useTemplate()
-    const { fetchTemplateList, fetchTemplateDetail } = http
+    const { templateSettingState, isCurrentDataSame, changeTreeData, refreshTemplateList } = useTemplate()
+    const { fetchTemplateDetail } = http
     const { setBreadcrumbTemplate } = useBreadcrumb()
     const templateTreeRefs = ref([])
     const { resetPageData, DEFAULT_PAGE, STATIC_PAGE_GROUP_ID, pageSettingState } = usePage()
@@ -79,38 +103,38 @@ export default {
       currentNodeData: {}
     })
 
-    const formatTreeData = (data) => {
-      const map = {}
-      const tree = []
+    // const formatTreeData = (data) => {
+    //   const map = {}
+    //   const tree = []
 
-      data.forEach((item) => {
-        map[item.id] = { ...item, children: [] }
-      })
+    //   data.forEach((item) => {
+    //     map[item.id] = { ...item, children: [] }
+    //   })
 
-      data.forEach((item) => {
-        if (item.parentId) {
-          const parent = map[item.parentId]
-          if (parent) {
-            parent.children.push(map[item.id])
-          }
-        } else {
-          tree.push(map[item.id])
-        }
-      })
-      templateSettingState.treeDataMapping = map
+    //   data.forEach((item) => {
+    //     if (item.parentId) {
+    //       const parent = map[item.parentId]
+    //       if (parent) {
+    //         parent.children.push(map[item.id])
+    //       }
+    //     } else {
+    //       tree.push(map[item.id])
+    //     }
+    //   })
+    //   templateSettingState.treeDataMapping = map
 
-      return tree
-    }
+    //   return tree
+    // }
 
     const searchTemplateData = (value) => {
       templateTreeRefs.value.filter(value)
     }
 
-    const refreshTemplateList = async (appId, data) => {
-      const templateData = data ? data : await fetchTemplateList(appId)
-      templateSettingState.templates = formatTreeData(templateData)
-      return templateSettingState.templates
-    }
+    // const refreshTemplateList = async (appId, data) => {
+    //   const templateData = data ? data : await fetchTemplateList(appId)
+    //   templateSettingState.templates = formatTreeData(templateData)
+    //   return templateSettingState.templates
+    // }
 
     templateSettingState.updateTreeData = async () => {
       const templateList = await refreshTemplateList(appInfoState.selectedId)
@@ -204,7 +228,7 @@ export default {
       if (isSaved() && isTemplateSaved() && isCurrentDataSame()) {
         switchTemplate(data)
       } else {
-        const text = isBlock() ? '区块' : (!isSaved() ? '页面' : '模板')
+        const text = isBlock() ? '区块' : !isSaved() ? '页面' : '模板'
 
         confirm({
           title: '提示',
@@ -372,7 +396,6 @@ export default {
         position: relative;
         top: -2px;
         left: -8px;
-
       }
     }
 
