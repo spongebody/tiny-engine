@@ -58,7 +58,7 @@
       </tiny-form-item>
 
       <!-- 选择模板 -->
-      <tiny-form-item v-if="!isFolder" label="选择模板" prop="template">
+      <tiny-form-item v-if="!isFolder && pageSettingState.isNew" label="选择模板" prop="template">
         <tiny-select
           v-model="pageSettingState.template_content"
           filterable
@@ -67,7 +67,7 @@
           value-field="template_content"
           text-field="name"
           render-type="tree"
-          :tree-op="{ data: pageSettingState.templates }"
+          :tree-op="treeTemplateOp"
         ></tiny-select>
       </tiny-form-item>
     </tiny-form>
@@ -236,6 +236,25 @@ export default {
       oldParentId.value = value.id
     }
 
+    const treeTemplateOp = computed(() => {
+      const processTemplates = (templates) => {
+        return templates.map((template) => {
+          const processedTemplate = { ...template }
+          if (!template.isTemplate) {
+            processedTemplate.disabled = true
+          }
+          if (template.children && template.children.length > 0) {
+            processedTemplate.children = processTemplates(template.children)
+          }
+          return processedTemplate
+        })
+      }
+
+      return {
+        data: processTemplates(pageSettingState.templates)
+      }
+    })
+
     const filterTemplate = (value, data) => {
       if (!value) return true
 
@@ -251,7 +270,8 @@ export default {
       treeFolderOp,
       currentRoute,
       changeParentForderId,
-      filterTemplate
+      filterTemplate,
+      treeTemplateOp
     }
   }
 }

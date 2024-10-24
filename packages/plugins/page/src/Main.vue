@@ -99,6 +99,7 @@ export default {
       pageSettingState.currentPageDataCopy = extend(true, {}, pageSettingState.currentPageData)
       state.isFolder = false
       pageSettingState.templates = await refreshTemplateList(appInfoState.selectedId)
+      pageSettingState.template_content = null
       openPageSettingPanel()
     }
 
